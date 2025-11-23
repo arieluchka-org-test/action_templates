@@ -1,0 +1,7 @@
+{
+  "name": "CI/CD Pipeline",
+  "description": "Standard CI/CD pipeline template with build, test, and deploy stages",
+  "iconName": "workflow",
+  "categories": ["Continuous Integration", "Deployment"],
+  "filePatterns": ["ci-cd-pipeline.yml"]
+}

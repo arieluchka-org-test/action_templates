@@ -1,0 +1,54 @@
+# JavaScript API Fetcher Action
+# This action demonstrates creating a custom action using JavaScript/Node.js
+# It fetches data from an API and processes the response
+
+name: 'JavaScript API Fetcher'
+description: 'Fetches and processes data from APIs using Node.js'
+author: 'Your Organization'
+
+inputs:
+  url:
+    description: 'API URL to fetch data from'
+    required: true
+  method:
+    description: 'HTTP method (GET, POST, etc.)'
+    required: false
+    default: 'GET'
+  extract-field:
+    description: 'JSON field to extract from response (optional)'
+    required: false
+    default: ''
+
+outputs:
+  status:
+    description: 'HTTP status code'
+    value: ${{ steps.fetch.outputs.status }}
+  data:
+    description: 'Response data or extracted field'
+    value: ${{ steps.fetch.outputs.data }}
+  success:
+    description: 'Whether the request was successful'
+    value: ${{ steps.fetch.outputs.success }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: npm install
+    
+    - name: Fetch API data
+      id: fetch
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: node index.js
+      env:
+        INPUT_URL: ${{ inputs.url }}
+        INPUT_METHOD: ${{ inputs.method }}
+        INPUT_EXTRACT_FIELD: ${{ inputs.extract-field }}

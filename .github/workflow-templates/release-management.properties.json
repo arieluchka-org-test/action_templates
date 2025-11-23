@@ -1,0 +1,7 @@
+{
+  "name": "Release Management",
+  "description": "Automated release workflow with versioning, changelog, and asset publishing",
+  "iconName": "rocket",
+  "categories": ["Release", "Automation"],
+  "filePatterns": ["release-management.yml"]
+}

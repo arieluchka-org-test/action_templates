@@ -1,0 +1,41 @@
+# Python Data Processor Action
+# This action demonstrates creating a custom action using Python
+# It processes JSON data and performs calculations
+
+name: 'Python Data Processor'
+description: 'Processes data using Python and returns statistics'
+author: 'Your Organization'
+
+inputs:
+  data:
+    description: 'JSON array of numbers to process'
+    required: true
+    default: '[1, 2, 3, 4, 5]'
+  operation:
+    description: 'Operation to perform: sum, average, max, min'
+    required: false
+    default: 'sum'
+
+outputs:
+  result:
+    description: 'The result of the operation'
+    value: ${{ steps.process.outputs.result }}
+  count:
+    description: 'Number of items processed'
+    value: ${{ steps.process.outputs.count }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+    
+    - name: Process data
+      id: process
+      shell: bash
+      run: python ${{ github.action_path }}/process.py
+      env:
+        INPUT_DATA: ${{ inputs.data }}
+        INPUT_OPERATION: ${{ inputs.operation }}

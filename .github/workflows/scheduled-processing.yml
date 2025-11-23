@@ -1,0 +1,77 @@
+# Scheduled Data Processing Workflow
+#
+# This workflow runs on a schedule to demonstrate:
+# - Scheduled workflow execution
+# - Using custom actions in automated tasks
+# - Generating reports and summaries
+
+name: Scheduled Data Processing
+
+on:
+  schedule:
+    # Run every day at 00:00 UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    inputs:
+      manual-trigger:
+        description: 'Manual trigger reason'
+        required: false
+        default: 'Manual execution'
+
+jobs:
+  daily-report:
+    name: Generate Daily Report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Generate greeting
+        id: greeting
+        uses: ./.github/actions/bash-greeter
+        with:
+          who-to-greet: 'Daily Report System'
+      
+      - name: Process daily metrics
+        id: metrics
+        uses: ./.github/actions/python-processor
+        with:
+          data: '[85, 92, 78, 95, 88, 91, 87]'
+          operation: 'average'
+      
+      - name: Fetch external data
+        id: external
+        uses: ./.github/actions/js-api-fetcher
+        with:
+          url: 'https://api.github.com/rate_limit'
+          method: 'GET'
+      
+      - name: Create daily report
+        run: |
+          echo "# 📊 Daily Automated Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Generated:** $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Metrics" >> $GITHUB_STEP_SUMMARY
+          echo "- Daily Average: ${{ steps.metrics.outputs.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Data Points: ${{ steps.metrics.outputs.count }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## System Status" >> $GITHUB_STEP_SUMMARY
+          echo "- API Status: ${{ steps.external.outputs.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Connectivity: ${{ steps.external.outputs.success }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Daily processing complete" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Save report
+        run: |
+          mkdir -p reports
+          echo "Daily Report - $(date -u)" > reports/daily-report.txt
+          echo "Average: ${{ steps.metrics.outputs.result }}" >> reports/daily-report.txt
+          echo "Status: Success" >> reports/daily-report.txt
+      
+      - name: Upload report
+        uses: actions/upload-artifact@v3
+        with:
+          name: daily-report-$(date +%Y%m%d)
+          path: reports/
+          retention-days: 30

@@ -1,0 +1,137 @@
+# Demo: Test All Custom Actions
+# 
+# This workflow demonstrates how to use all three custom actions
+# created in this repository (bash, python, and javascript)
+
+name: Demo - Test All Actions
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # Test the Bash Greeter Action
+  test-bash-action:
+    name: Test Bash Greeter
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Run bash greeter
+        id: bash-greeter
+        uses: ./.github/actions/bash-greeter
+        with:
+          who-to-greet: 'GitHub Actions User'
+      
+      - name: Display bash greeting
+        run: |
+          echo "🎉 Bash Action Output:"
+          echo "${{ steps.bash-greeter.outputs.greeting-message }}"
+
+  # Test the Python Data Processor Action
+  test-python-action:
+    name: Test Python Processor
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        operation: [sum, average, max, min]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Run python processor (${{ matrix.operation }})
+        id: python-processor
+        uses: ./.github/actions/python-processor
+        with:
+          data: '[15, 22, 8, 42, 31, 19]'
+          operation: ${{ matrix.operation }}
+      
+      - name: Display python results
+        run: |
+          echo "🐍 Python Action Output (${{ matrix.operation }}):"
+          echo "Result: ${{ steps.python-processor.outputs.result }}"
+          echo "Count: ${{ steps.python-processor.outputs.count }} items processed"
+
+  # Test the JavaScript API Fetcher Action
+  test-javascript-action:
+    name: Test JavaScript API Fetcher
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Fetch GitHub API data
+        id: js-fetcher
+        uses: ./.github/actions/js-api-fetcher
+        with:
+          url: 'https://api.github.com/zen'
+          method: 'GET'
+      
+      - name: Display API results
+        run: |
+          echo "🚀 JavaScript Action Output:"
+          echo "Status: ${{ steps.js-fetcher.outputs.status }}"
+          echo "Success: ${{ steps.js-fetcher.outputs.success }}"
+          echo "Data: ${{ steps.js-fetcher.outputs.data }}"
+      
+      - name: Fetch and extract specific field
+        id: js-fetcher-extract
+        uses: ./.github/actions/js-api-fetcher
+        with:
+          url: 'https://api.github.com/repos/github/docs'
+          method: 'GET'
+          extract-field: 'name'
+      
+      - name: Display extracted field
+        run: |
+          echo "📦 Extracted Field:"
+          echo "Repository name: ${{ steps.js-fetcher-extract.outputs.data }}"
+
+  # Combined test using multiple actions
+  combined-test:
+    name: Combined Actions Test
+    runs-on: ubuntu-latest
+    needs: [test-bash-action, test-python-action, test-javascript-action]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Greet user
+        id: greet
+        uses: ./.github/actions/bash-greeter
+        with:
+          who-to-greet: 'CI/CD Pipeline'
+      
+      - name: Process some data
+        id: process
+        uses: ./.github/actions/python-processor
+        with:
+          data: '[100, 200, 300, 400, 500]'
+          operation: 'average'
+      
+      - name: Fetch API data
+        id: api
+        uses: ./.github/actions/js-api-fetcher
+        with:
+          url: 'https://api.github.com/octocat'
+          method: 'GET'
+      
+      - name: Create summary
+        run: |
+          echo "## 🎯 Combined Actions Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Bash Action" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.greet.outputs.greeting-message }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Python Action" >> $GITHUB_STEP_SUMMARY
+          echo "- Result: ${{ steps.process.outputs.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Items: ${{ steps.process.outputs.count }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### JavaScript Action" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ steps.api.outputs.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Success: ${{ steps.api.outputs.success }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ All custom actions executed successfully!" >> $GITHUB_STEP_SUMMARY

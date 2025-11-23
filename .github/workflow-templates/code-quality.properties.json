@@ -1,0 +1,7 @@
+{
+  "name": "Code Quality Checks",
+  "description": "Automated code quality workflow with linting, formatting, and security checks",
+  "iconName": "checklist",
+  "categories": ["Code Quality", "Automation"],
+  "filePatterns": ["code-quality.yml"]
+}
