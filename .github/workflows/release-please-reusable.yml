@@ -1,0 +1,29 @@
+name: Release Please (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      packages:
+        description: 'JSON array of packages to release'
+        required: true
+        type: string
+    secrets:
+      token:
+        description: 'GitHub token with write permissions'
+        required: true
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: ${{ fromJson(inputs.packages) }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: google-github-actions/release-please-action@v4
+        with:
+          path: ${{ matrix.package.path }}
+          package-name: ${{ matrix.package.name }}
+          release-type: node
+          token: ${{ secrets.token }}
