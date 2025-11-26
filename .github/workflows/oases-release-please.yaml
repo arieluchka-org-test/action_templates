@@ -1,0 +1,21 @@
+name: Release Please (Reusable)
+
+on:
+  workflow_call:
+    secrets:
+      token:
+        required: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      paths_released: ${{ steps.release.outputs.paths_released }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          # Automatically finds release-please-config.json and .release-please-manifest.json
+          # in the root of the calling repository.
+          token: ${{ secrets.token || secrets.GITHUB_TOKEN }}
