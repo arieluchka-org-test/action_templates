@@ -1,30 +1,22 @@
-# Bash Greeter Action
-# This action demonstrates how to create a custom action using a bash script
-# It takes an input parameter and outputs a greeting message
-
-name: 'Bash Greeter'
-description: 'A simple action that greets users using a bash script'
-author: 'Your Organization'
-
+name: 'Release Please Action'
+description: 'Runs release-please for a specific path'
 inputs:
-  who-to-greet:
-    description: 'Name of the person to greet'
+  path:
+    description: 'Path to the package'
     required: true
-    default: 'World'
-
-outputs:
-  greeting-message:
-    description: 'The greeting message generated'
-    value: ${{ steps.greet.outputs.message }}
+  package-name:
+    description: 'Name of the package'
+    required: true
+  token:
+    description: 'GitHub token'
+    required: true
 
 runs:
   using: 'composite'
   steps:
-    - name: Run greeting script
-      id: greet
-      shell: bash
-      run: |
-        echo "Running bash greeter action..."
-        MESSAGE="Hello ${{ inputs.who-to-greet }}, from Bash! 🎉"
-        echo "message=$MESSAGE" >> $GITHUB_OUTPUT
-        echo "Generated greeting: $MESSAGE"
+    - uses: google-github-actions/release-please-action@v4
+      with:
+        path: ${{ inputs.path }}
+        package-name: ${{ inputs.package-name }}
+        release-type: simple
+        token: ${{ inputs.token }}
