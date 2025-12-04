@@ -141,30 +141,35 @@ export async function main(fetchOverride?: any) {
   core.info(`Running release-please version: ${VERSION}`)
   const inputs = parseInputs();
   
-  // Register Jira link plugin if enabled
-  if (inputs.enableJiraLinks && inputs.jiraBaseUrl) {
-    core.info('Registering Jira link plugin...');
-    try {
-      const {createJiraLinkPlugin} = await import('./plugins');
-      
-      registerPlugin('jira-link', (options) => {
-        return createJiraLinkPlugin(
-          options.github,
-          options.targetBranch,
-          options.repositoryConfig,
-          {
-            jiraBaseUrl: inputs.jiraBaseUrl,
-            debug: core.isDebug() || process.env.JIRA_LINK_DEBUG === 'true',
-          }
-        );
-      });
-      
-      core.info(`Jira link plugin registered (Jira URL: ${inputs.jiraBaseUrl})`);
-    } catch (error) {
-      core.warning(`Failed to register Jira link plugin: ${error}`);
+  // Register Jira link plugin if Jira URL is provided
+  // This must be done BEFORE loading manifests that might reference the plugin
+  if (inputs.jiraBaseUrl || inputs.enableJiraLinks) {
+    const jiraUrl = inputs.jiraBaseUrl || process.env.JIRA_BASE_URL;
+    
+    if (jiraUrl) {
+      core.info('Registering Jira link plugin...');
+      try {
+        const {createJiraLinkPlugin} = await import('./plugins');
+        
+        registerPlugin('jira-link', (options) => {
+          return createJiraLinkPlugin(
+            options.github,
+            options.targetBranch,
+            options.repositoryConfig,
+            {
+              jiraBaseUrl: jiraUrl,
+              debug: core.isDebug() || process.env.JIRA_LINK_DEBUG === 'true',
+            }
+          );
+        });
+        
+        core.info(`Jira link plugin registered successfully (Jira URL: ${jiraUrl})`);
+      } catch (error) {
+        core.warning(`Failed to register Jira link plugin: ${error}`);
+      }
+    } else {
+      core.warning('Jira links enabled but no Jira base URL provided. Set jira-base-url input or JIRA_BASE_URL environment variable.');
     }
-  } else if (inputs.enableJiraLinks && !inputs.jiraBaseUrl) {
-    core.warning('Jira links enabled but no Jira base URL provided. Set jira-base-url input or JIRA_BASE_URL environment variable.');
   }
   
   const github = await getGitHubInstance(inputs, fetchOverride);

@@ -19,3 +19,5 @@ jobs:
           token: ${{ secrets.token || secrets.GITHUB_TOKEN }}
           jira-base-url: 'https://brightsourceenergy.atlassian.net'
           enable-jira-links: true
+        env:
+          JIRA_LINK_DEBUG: 'true'
