@@ -13,9 +13,9 @@ jobs:
       releases_created: ${{ steps.release.outputs.releases_created }}
       paths_released: ${{ steps.release.outputs.paths_released }}
     steps:
-      - uses: googleapis/release-please-action@v4
+      - uses: arieluchka-org-test/action_templates/releases/release-please-action@main
         id: release
         with:
-          # Automatically finds release-please-config.json and .release-please-manifest.json
-          # in the root of the calling repository.
           token: ${{ secrets.token || secrets.GITHUB_TOKEN }}
+          jira-base-url: 'https://brightsourceenergy.atlassian.net'
+          enable-jira-links: true
