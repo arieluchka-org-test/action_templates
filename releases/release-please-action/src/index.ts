@@ -15,6 +15,28 @@
 import * as core from '@actions/core';
 import {GitHub, Manifest, CreatedRelease, PullRequest, VERSION, registerPlugin} from 'release-please';
 
+// Register Jira link plugin at module load time (before any config parsing)
+try {
+  const {createJiraLinkPlugin} = require('./plugins');
+  
+  registerPlugin('jira-link', (options) => {
+    const jiraBaseUrl = process.env.JIRA_BASE_URL || 'https://yourcompany.atlassian.net';
+    return createJiraLinkPlugin(
+      options.github,
+      options.targetBranch,
+      options.repositoryConfig,
+      {
+        jiraBaseUrl: jiraBaseUrl,
+        debug: process.env.JIRA_LINK_DEBUG === 'true',
+      }
+    );
+  });
+  
+  console.log('Jira link plugin registered at module load time');
+} catch (error) {
+  console.warn(`Failed to register Jira link plugin: ${error}`);
+}
+
 const DEFAULT_CONFIG_FILE = 'release-please-config.json';
 const DEFAULT_MANIFEST_FILE = '.release-please-manifest.json';
 const DEFAULT_GITHUB_API_URL = 'https://api.github.com';
@@ -141,32 +163,11 @@ export async function main(fetchOverride?: any) {
   core.info(`Running release-please version: ${VERSION}`)
   const inputs = parseInputs();
   
-  // Register Jira link plugin if Jira URL is provided
-  // This must be done BEFORE loading manifests that might reference the plugin
+  // Log Jira configuration if enabled
   if (inputs.jiraBaseUrl || inputs.enableJiraLinks) {
     const jiraUrl = inputs.jiraBaseUrl || process.env.JIRA_BASE_URL;
-    
     if (jiraUrl) {
-      core.info('Registering Jira link plugin...');
-      try {
-        const {createJiraLinkPlugin} = await import('./plugins');
-        
-        registerPlugin('jira-link', (options) => {
-          return createJiraLinkPlugin(
-            options.github,
-            options.targetBranch,
-            options.repositoryConfig,
-            {
-              jiraBaseUrl: jiraUrl,
-              debug: core.isDebug() || process.env.JIRA_LINK_DEBUG === 'true',
-            }
-          );
-        });
-        
-        core.info(`Jira link plugin registered successfully (Jira URL: ${jiraUrl})`);
-      } catch (error) {
-        core.warning(`Failed to register Jira link plugin: ${error}`);
-      }
+      core.info(`Jira link plugin active (Jira URL: ${jiraUrl})`);
     } else {
       core.warning('Jira links enabled but no Jira base URL provided. Set jira-base-url input or JIRA_BASE_URL environment variable.');
     }
