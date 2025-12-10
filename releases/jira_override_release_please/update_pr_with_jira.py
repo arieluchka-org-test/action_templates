@@ -53,12 +53,12 @@ def get_jira_markdown_link(ticket_id: str, jira_base_url: str) -> str:
     return f"[{ticket_id}]({jira_url})"
 
 
-def create_commit_override_comment(pr_title: str, jira_link: str) -> str:
+def create_commit_override_comment(commit_message: str, jira_link: str) -> str:
     """
     Create the commit override markdown comment.
     
     Args:
-        pr_title: Title of the PR
+        commit_message: Commit message
         jira_link: Markdown link to Jira ticket
     
     Returns:
@@ -67,7 +67,7 @@ def create_commit_override_comment(pr_title: str, jira_link: str) -> str:
     return f"""<!--
 
 BEGIN_COMMIT_OVERRIDE
-{pr_title} ({jira_link})
+{commit_message} ({jira_link})
 END_COMMIT_OVERRIDE
 
 -->"""
@@ -104,6 +104,7 @@ def find_pr_for_commit(repo, commit_sha: str) -> Optional[any]:
 def update_pr_body_with_jira(
     repo,
     pr,
+    commit,
     jira_ticket: str,
     jira_base_url: str
 ) -> bool:
@@ -113,6 +114,7 @@ def update_pr_body_with_jira(
     Args:
         repo: PyGithub Repository object
         pr: PullRequest object
+        commit: Commit object
         jira_ticket: Jira ticket ID
         jira_base_url: Base URL for Jira
     
@@ -127,15 +129,19 @@ def update_pr_body_with_jira(
             print(f"PR #{pr.number} already has a commit override. Skipping.")
             return False
         
+        # Get commit message (first line only, without trailing newlines)
+        commit_message = commit.commit.message.split('\n')[0].strip()
+        
         # Create the Jira link and override comment
         jira_link = get_jira_markdown_link(jira_ticket, jira_base_url)
-        override_comment = create_commit_override_comment(pr.title, jira_link)
+        override_comment = create_commit_override_comment(commit_message, jira_link)
         
         # Append to PR body
         updated_body = current_body + "\n\n" + override_comment if current_body else override_comment
         
         pr.edit(body=updated_body)
         print(f"✓ Updated PR #{pr.number} with Jira reference: {jira_ticket}")
+        print(f"  Commit message: {commit_message}")
         return True
         
     except Exception as e:
@@ -172,6 +178,9 @@ def main():
     g = Github(github_token)
     repo = g.get_repo(repo_name)
     
+    # Get commit object
+    commit = repo.get_commit(commit_sha)
+    
     # Find PR for commit
     pr = find_pr_for_commit(repo, commit_sha)
     
@@ -192,7 +201,7 @@ def main():
     print(f"Detected Jira ticket: {jira_ticket}")
     
     # Update PR body
-    success = update_pr_body_with_jira(repo, pr, jira_ticket, jira_base_url)
+    success = update_pr_body_with_jira(repo, pr, commit, jira_ticket, jira_base_url)
     
     if success:
         print("✓ Successfully updated PR with Jira reference")
