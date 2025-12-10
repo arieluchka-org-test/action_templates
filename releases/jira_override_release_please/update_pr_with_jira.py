@@ -26,7 +26,7 @@ def extract_jira_ticket(branch_name: str) -> Optional[str]:
     # Pattern: PROJECT_KEY-NUMBER at the start of branch name
     # Project key: uppercase letters, at least 2 characters
     # Number: one or more digits
-    pattern = r'^([A-Z]{2,}+-\d+)'
+    pattern = r'^([A-Z]{2,}-\d+)'
     
     match = re.match(pattern, branch_name)
     if match:
