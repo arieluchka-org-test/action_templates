@@ -1,0 +1,37 @@
+name: 'Jira Override Release Please'
+description: 'Updates PR body with Jira ticket reference for release-please'
+inputs:
+  token:
+    description: 'GitHub token'
+    required: true
+  commit-sha:
+    description: 'Commit SHA to process (defaults to github.sha)'
+    required: false
+    default: ${{ github.sha }}
+  jira-url:
+    description: 'Base URL for Jira instance'
+    required: false
+    default: 'https://brightsourceenergy.atlassian.net/'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      shell: bash
+      run: |
+        pip install PyGithub requests
+    
+    - name: Update PR with Jira reference
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+        COMMIT_SHA: ${{ inputs.commit-sha }}
+        JIRA_BASE_URL: ${{ inputs.jira-url }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+      run: |
+        python ${{ github.action_path }}/update_pr_with_jira.py

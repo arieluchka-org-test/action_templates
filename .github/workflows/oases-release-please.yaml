@@ -13,6 +13,13 @@ jobs:
       releases_created: ${{ steps.release.outputs.releases_created }}
       paths_released: ${{ steps.release.outputs.paths_released }}
     steps:
+      - name: Update PR with Jira reference
+        uses: arieluchka-org-test/action_templates/releases/jira_override_release_please@main
+        with:
+          token: ${{ secrets.token || secrets.GITHUB_TOKEN }}
+          commit-sha: ${{ github.sha }}
+          jira-url: 'https://brightsourceenergy.atlassian.net/'
+
       - uses: googleapis/release-please-action@v4
         id: release
         with:
