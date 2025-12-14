@@ -26,3 +26,4 @@ jobs:
           # Automatically finds release-please-config.json and .release-please-manifest.json
           # in the root of the calling repository.
           token: ${{ secrets.token || secrets.GITHUB_TOKEN }}
+          target-branch: ${{ github.ref_name }}
