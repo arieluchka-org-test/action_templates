@@ -1,0 +1,18 @@
+name: Workflow 2 - Depth Test
+
+on:
+  workflow_call:
+
+jobs:
+  print-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print workflow name
+        run: |
+          echo "================================"
+          echo "This is Workflow 2 - Second level"
+          echo "================================"
+  
+  call-next-workflow:
+    needs: print-name
+    uses: ./.github/workflows/workflow3-depth-test.yml

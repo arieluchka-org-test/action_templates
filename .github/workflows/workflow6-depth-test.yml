@@ -1,0 +1,15 @@
+name: Workflow 6 - Depth Test Final
+
+on:
+  workflow_call:
+
+jobs:
+  print-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print workflow name
+        run: |
+          echo "================================"
+          echo "This is Workflow 6 - Final level (Maximum depth reached!)"
+          echo "================================"
+          echo "Workflow chain completed successfully!"

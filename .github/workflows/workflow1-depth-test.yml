@@ -1,0 +1,18 @@
+name: Workflow 1 - Depth Test Starter
+
+on:
+  workflow_dispatch:
+
+jobs:
+  print-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print workflow name
+        run: |
+          echo "================================"
+          echo "This is Workflow 1 - Starting the depth test chain"
+          echo "================================"
+  
+  call-next-workflow:
+    needs: print-name
+    uses: ./.github/workflows/workflow2-depth-test.yml
