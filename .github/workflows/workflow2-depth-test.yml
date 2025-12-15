@@ -14,5 +14,4 @@ jobs:
           echo "================================"
   
   call-next-workflow:
-    needs: print-name
     uses: ./.github/workflows/workflow3-depth-test.yml
